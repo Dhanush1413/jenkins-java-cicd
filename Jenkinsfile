@@ -9,8 +9,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Build the Docker image
-                    sh 'docker build -t $DOCKER_IMAGE .'
+                    // Use Windows batch command instead of sh
+                    bat 'docker build -t %DOCKER_IMAGE% .'
                 }
             }
         }
@@ -18,10 +18,9 @@ pipeline {
         stage('Docker Login and Push') {
             steps {
                 script {
-                    // Login to Docker registry with the correct credentials
+                    // Use Windows batch command for Docker login and push
                     withDockerRegistry([ credentialsId: 'dockerhub-creds', url: 'https://index.docker.io/v1/' ]) {
-                        // Push the Docker image to Docker Hub
-                        sh 'docker push $DOCKER_IMAGE'
+                        bat 'docker push %DOCKER_IMAGE%'
                     }
                 }
             }
