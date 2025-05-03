@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven 3.9.4' // Must match the Maven name in Global Tool Configuration
+    }
+
     environment {
         IMAGE_NAME = 'dhanushv167/demo-app'
     }
@@ -27,9 +31,9 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    docker.build("${IMAGE_NAME}")
+                    def app = docker.build("${IMAGE_NAME}")
                     docker.withRegistry('', 'dockerhub-creds-id') {
-                        docker.image("${IMAGE_NAME}").push()
+                        app.push()
                     }
                 }
             }
@@ -37,7 +41,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'docker run -d -p 8080:8080 dhanushv167/demo-app'
+                bat "docker run -d -p 8080:8080 ${IMAGE_NAME}"
             }
         }
     }
