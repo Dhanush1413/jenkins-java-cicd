@@ -1,34 +1,56 @@
-// devps projects
 pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'dhanushvenkatachalam/demo-app'
+        IMAGE_NAME = 'dhanushv167/demo-app'
     }
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                script {
-                    bat 'docker build -t %DOCKER_IMAGE% .'
-                }
+                git 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
             }
         }
 
-        stage('Docker Login and Push') {
+        stage('Build') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Docker Build and Push') {
             steps {
                 script {
-                    withDockerRegistry([ credentialsId: 'dockerhub-creds', url: 'https://index.docker.io/v1/' ]) {
-                        bat 'docker push %DOCKER_IMAGE%'
+                    docker.build("${IMAGE_NAME}")
+                    docker.withRegistry('', 'dockerhub-creds-id') {
+                        docker.image("${IMAGE_NAME}").push()
                     }
                 }
             }
         }
 
-        stage('Check Container Status') {
+        stage('Deploy') {
             steps {
-                bat 'docker ps'
+                script {
+                    sh 'docker rm -f demo-app-container || true'
+                    sh 'docker run -d -p 8080:8080 --name demo-app-container dhanushv167/demo-app'
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build and deployment successful!'
+        }
+        failure {
+            echo '❌ Pipeline failed.'
         }
     }
 }
