@@ -8,20 +8,19 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Ensure it checks out the correct branch
-                git branch: 'main', url: 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
+                git 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
             }
         }
 
         stage('Build') {
             steps {
-                bat 'mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                bat 'mvn test'
+                sh 'mvn test'
             }
         }
 
@@ -38,10 +37,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                script {
-                    bat 'docker rm -f demo-app-container || true'
-                    bat 'docker run -d -p 8080:8080 --name demo-app-container dhanushv167/demo-app'
-                }
+                sh 'docker run -d -p 8080:8080 dhanushv167/demo-app'
             }
         }
     }
