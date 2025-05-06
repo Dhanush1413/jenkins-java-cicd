@@ -15,13 +15,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                bat 'mvn test'
             }
         }
 
@@ -39,8 +39,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'docker rm -f demo-app-container || true'
-                    sh 'docker run -d -p 8080:8080 --name demo-app-container dhanushv167/demo-app'
+                    bat 'docker rm -f demo-app-container || true'
+                    bat 'docker run -d -p 8080:8080 --name demo-app-container dhanushv167/demo-app'
                 }
             }
         }
