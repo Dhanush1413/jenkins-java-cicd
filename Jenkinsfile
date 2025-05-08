@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
+                git branch: 'main', url: 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
             }
         }
 
@@ -27,9 +27,9 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    docker.build("${IMAGE_NAME}")
+                    def image = docker.build("${IMAGE_NAME}")
                     docker.withRegistry('', 'dockerhub-creds-id') {
-                        docker.image("${IMAGE_NAME}").push()
+                        image.push()
                     }
                 }
             }
@@ -37,7 +37,13 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh 'docker run -d -p 8080:8080 dhanushv167/demo-app'
+                script {
+                    // Stop and remove any existing container using the same name
+                    sh '''
+                        docker rm -f demo-app-container || true
+                        docker run -d --name demo-app-container -p 8080:8080 ${IMAGE_NAME}
+                    '''
+                }
             }
         }
     }
