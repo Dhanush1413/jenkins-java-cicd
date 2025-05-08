@@ -14,13 +14,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                bat 'mvn test'
             }
         }
 
@@ -38,9 +38,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop and remove any existing container using the same name
-                    sh '''
-                        docker rm -f demo-app-container || true
+                    // Remove existing container and run new one
+                    bat '''
+                        docker rm -f demo-app-container || exit 0
                         docker run -d --name demo-app-container -p 8080:8080 ${IMAGE_NAME}
                     '''
                 }
