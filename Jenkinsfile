@@ -27,9 +27,9 @@ pipeline {
         stage('Docker Build and Push') {
             steps {
                 script {
-                    def image = docker.build("${IMAGE_NAME}")
+                    def app = docker.build("${IMAGE_NAME}")
                     docker.withRegistry('', 'dockerhub-creds-id') {
-                        image.push()
+                        app.push()
                     }
                 }
             }
@@ -37,13 +37,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                script {
-                    // Remove existing container and run new one
-                    bat '''
-                        docker rm -f demo-app-container || exit 0
-                        docker run -d --name demo-app-container -p 8080:8080 ${IMAGE_NAME}
-                    '''
-                }
+                bat "docker run -d -p 8080:8080 ${IMAGE_NAME}"
             }
         }
     }
