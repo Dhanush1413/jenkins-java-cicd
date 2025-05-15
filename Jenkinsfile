@@ -1,10 +1,9 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'dhanushv167/demo-app'
+        environment {
+        IMAGE_NAME = 'dhanushvenkatachalam/demo-app'
     }
-
     stages {
         stage('Checkout') {
             steps {
