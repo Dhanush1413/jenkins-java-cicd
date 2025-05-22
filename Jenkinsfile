@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub-creds' // Replace with your Jenkins DockerHub credentials ID
-        IMAGE_NAME = 'dhanushvenkatachalam/demo-app:latest' // Your DockerHub repo
+        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'
+        IMAGE_NAME = 'dhanushvenkatachalam/demo-app:latest'
     }
 
     stages {
         stage('Clone') {
             steps {
-                git 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
+                git branch: 'main', url: 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
             }
         }
 
