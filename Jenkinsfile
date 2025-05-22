@@ -2,36 +2,33 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'
-        IMAGE_NAME = 'dhanushvenkatachalam/demo-app:latest'
+        IMAGE_NAME = 'yourdockerhubusername/yourimage:latest'
     }
 
     stages {
         stage('Clone') {
             steps {
-                git branch: 'main', url: 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
+                git 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
             }
         }
 
         stage('Build with Maven') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                bat 'mvn clean install'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                bat "docker build -t %IMAGE_NAME% ."
             }
         }
 
         stage('Push to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push $IMAGE_NAME
-                    '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                    bat "docker push %IMAGE_NAME%"
                 }
             }
         }
