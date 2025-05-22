@@ -1,53 +1,39 @@
 pipeline {
     agent any
 
-        environment {
-        IMAGE_NAME = 'dhanushvenkatachalam/demo-app'
+    environment {
+        DOCKER_CREDENTIALS_ID = 'dockerhub-creds' // Replace with your Jenkins DockerHub credentials ID
+        IMAGE_NAME = 'dhanushvenkatachalam/demo-app:latest'             // Your DockerHub repo
     }
+
     stages {
-        stage('Checkout') {
+        stage('Clone') {
             steps {
-                git branch: 'main', url: 'https://github.com/Dhanush1413/jenkins-java-cicd.git'
+                git 'https://github.com/Dhanush1413/jenkins-java-cicd.git
             }
         }
 
-        stage('Build') {
+        stage('Build with Maven') {
             steps {
-                bat 'mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
-        stage('Test') {
+        stage('Build Docker Image') {
             steps {
-                bat 'mvn test'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('Docker Build and Push') {
+        stage('Push to DockerHub') {
             steps {
-                script {
-                    def app = docker.build("${IMAGE_NAME}:latest")
-                    docker.withRegistry('', 'dockerhub-creds-id') {
-                        app.push("latest")
-                    }
+                withCredentials([usernamePassword(credentialsId: "$DOCKER_CREDENTIALS_ID", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push $IMAGE_NAME
+                    '''
                 }
             }
-        }
-
-        stage('Deploy') {
-            steps {
-                bat 'docker rm -f demo-app || exit 0'
-                bat "docker run -d -p 8080:8080 --name demo-app ${IMAGE_NAME}:latest"
-            }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Build and deployment successful!'
-        }
-        failure {
-            echo '❌ Pipeline failed.'
         }
     }
 }
